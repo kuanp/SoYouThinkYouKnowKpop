@@ -106,6 +106,8 @@ public class IdolManager {
             idols.addAll(parseIdolsFromWebPage(downloadedIdolsWebPage));
         }
 
+        idols.forEach(idol -> Log.d(TAG, idol.toString()));
+
         Log.i(TAG, String.format("Fetched %d unique idols", idols.size()));
 
         random = new Random();

@@ -3,12 +3,14 @@ package ex.example.soyouthinkyouknowkpop;
 import java.net.URL;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 public class Idol {
     private String name;
     private String group;
-    private transient URL photoSource;
+
+    @EqualsAndHashCode.Exclude private URL photoSource;
 
     public String getCompositeIdentity() {
 

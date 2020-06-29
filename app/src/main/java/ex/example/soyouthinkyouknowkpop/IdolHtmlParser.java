@@ -31,8 +31,6 @@ public class IdolHtmlParser {
 
         Elements idolListItems = listContainer.select("li");
         Set<Idol> idols = idolListItems.stream().map(idolListItem -> {
-            Log.i(TAG, idolListItem.toString());
-
             // find these 2 elements. Some list items are not idol list items..
             Element idolInfo = idolListItem.selectFirst("div.info");
             Element idolImageDiv = idolListItem.selectFirst("div.avatar");
@@ -40,9 +38,9 @@ public class IdolHtmlParser {
             if (idolInfo != null && idolImageDiv != null) {
                 Idol idol = new Idol();
                 Element nameTag = idolInfo.selectFirst("h3");
-                idol.setName(nameTag.text());
+                idol.setName(nameTag.text().toLowerCase());
                 Element groupTag = idolInfo.selectFirst("span");
-                idol.setGroup(groupTag.text());
+                idol.setGroup(groupTag.text().toLowerCase());
 
                 if (idol.getName().isEmpty() || idol.getGroup().isEmpty()) {
                     // malformed entry
@@ -65,8 +63,6 @@ public class IdolHtmlParser {
                 return null;
             }
         }).filter(Objects::nonNull).collect(Collectors.toSet());
-
-        idols.forEach(idol -> Log.i(TAG, idol.toString()));
 
         return idols;
     }
