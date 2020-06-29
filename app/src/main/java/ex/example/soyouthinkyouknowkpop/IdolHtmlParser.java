@@ -10,8 +10,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class IdolHtmlParser {
@@ -22,12 +25,12 @@ public class IdolHtmlParser {
      * too inefficient and dumb...
      */
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public static List<Idol> parseIdolsFromWebPage(String html) {
+    public static Set<Idol> parseIdolsFromWebPage(String html) {
         Document document = Jsoup.parse(html);
         Element listContainer = document.selectFirst("div.channel-box3-body");
 
         Elements idolListItems = listContainer.select("li");
-        List<Idol> idols = idolListItems.stream().map(idolListItem -> {
+        Set<Idol> idols = idolListItems.stream().map(idolListItem -> {
             Log.i(TAG, idolListItem.toString());
 
             // find these 2 elements. Some list items are not idol list items..
@@ -41,15 +44,27 @@ public class IdolHtmlParser {
                 Element groupTag = idolInfo.selectFirst("span");
                 idol.setGroup(groupTag.text());
 
+                if (idol.getName().isEmpty() || idol.getGroup().isEmpty()) {
+                    // malformed entry
+                    return null;
+                }
+
                 // find the image src
                 Element idolImageTag = idolImageDiv.selectFirst("img");
-                idol.setPhotoSource(idolImageTag.attr("data-cfsrc"));
+                String src = idolImageTag.attr("data-cfsrc");
+                try {
+                    idol.setPhotoSource(new URL(src));
+                } catch (MalformedURLException e) {
+                    Log.i(TAG, String.format("Detected image source '%s' was not an URL", src));
+                    // ignore malformed entries
+                    return null;
+                }
 
                 return idol;
             } else {
                 return null;
             }
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+        }).filter(Objects::nonNull).collect(Collectors.toSet());
 
         idols.forEach(idol -> Log.i(TAG, idol.toString()));
 
