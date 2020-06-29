@@ -1,6 +1,7 @@
 package ex.example.soyouthinkyouknowkpop;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
@@ -47,7 +48,25 @@ public class IdolManager {
                 return html;
             } catch (IOException e) {
                 Log.e("Downloader", "I don't know what happened", e);
-                throw new RuntimeException("Failed download");
+                throw new RuntimeException("Failed to download html");
+            }
+        }
+    }
+
+    private class DownloadImageTask extends AsyncTask<URL, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(URL... urls) {
+            if (urls.length == 0) {
+                throw new IllegalArgumentException("Need at least one URL");
+            }
+            try {
+                HttpURLConnection urlConnection = (HttpURLConnection) urls[0].openConnection();
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                return BitmapFactory.decodeStream(in);
+            } catch (IOException e) {
+                Log.e("Downloader", "I don't know what happened", e);
+                throw new RuntimeException("Failed to download image");
             }
         }
     }
@@ -64,8 +83,6 @@ public class IdolManager {
             e.printStackTrace();
             throw new RuntimeException("Download was interrupted");
         }
-
-        Log.i(TAG, downloadedIdolsWebPage);
 
         idols = parseIdolsFromWebPage(downloadedIdolsWebPage);
     }
